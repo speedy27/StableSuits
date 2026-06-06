@@ -1,8 +1,3 @@
-// ============================================================
-// StableSuite — domain types
-// Compliance-as-a-service for regulated stablecoins
-// ============================================================
-
 export type VerdictStatus = "PASS" | "WARN" | "FAIL";
 
 export type Rating = "AAA" | "AA" | "A" | "BBB" | "BB" | "B" | "CCC" | "D";
@@ -75,12 +70,67 @@ export interface Coin {
   amlFlags: number;
   amlScreened: number;
   attestationAgeSeconds: number;
+  attestedAt?: string;
   paidUpCapitalHkd: number;
   liquidCapitalHkd: number;
   opexBufferMonths: number;
   reserveComposition: ReserveSlice[];
   history: SeriesPoint[];
   accent: string;
+}
+
+export interface MintBurnEvent {
+  blockNumber: number;
+  txHash: string;
+  amount: number;
+  type: "mint" | "burn";
+}
+
+export interface ChainlinkPrice {
+  price: number;
+  updatedAt: number;
+  roundId: string;
+}
+
+export interface OnchainSnapshot {
+  blockNumber: number;
+  fetchedAt: number;
+  supplyRaw: string;
+  supply: number;
+  dexPrice: number;
+  chainlink: ChainlinkPrice;
+  recentMints: MintBurnEvent[];
+  recentBurns: MintBurnEvent[];
+  net500BlockMint: number;
+}
+
+export interface AttestationCompositionSlice {
+  label: string;
+  pct: number;
+  hqla: boolean;
+}
+
+export interface AttestationData {
+  issuer: string;
+  coin: string;
+  attestedAt: string;
+  attester: string;
+  reportUrl: string;
+  reserveUsd: number;
+  supplyUsd: number;
+  ratio: number;
+  composition: AttestationCompositionSlice[];
+  custodians: string[];
+  jurisdiction: string;
+  redemptionPolicy: string;
+  yieldToHolders: boolean;
+}
+
+export interface SdnEntry {
+  address: string;
+  entity: string;
+  program: string;
+  listedAt: string;
 }
 
 export interface Verdict {

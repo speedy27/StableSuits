@@ -3,6 +3,7 @@
 import {
   createContext,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -25,20 +26,39 @@ interface StoreValue {
 
 const Ctx = createContext<StoreValue | null>(null);
 
+function withLiveAttestationAge(coin: Coin, now: number): Coin {
+  if (!coin.attestedAt || now === 0) return coin;
+  return {
+    ...coin,
+    attestationAgeSeconds: Math.floor(
+      (now - new Date(coin.attestedAt).getTime()) / 1000,
+    ),
+  };
+}
+
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [coinId, setCoinId] = useState(DEFAULT_COIN_ID);
   const [stress, setStressState] = useState<StressInputs>(DEFAULT_STRESS);
+  const [now, setNow] = useState(0);
+
+  useEffect(() => {
+    setNow(Date.now());
+    const id = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(id);
+  }, []);
 
   const coin = useMemo(() => getCoin(coinId), [coinId]);
-  const verdict = useMemo(() => computeVerdict(coin, stress), [coin, stress]);
+  const liveCoin = useMemo(() => withLiveAttestationAge(coin, now), [coin, now]);
+
+  const verdict = useMemo(() => computeVerdict(liveCoin, stress), [liveCoin, stress]);
   const liveVerdict = useMemo(
-    () => computeVerdict(coin, { run: 0, haircut: 0, fxShockBps: 0 }),
-    [coin],
+    () => computeVerdict(liveCoin, { run: 0, haircut: 0, fxShockBps: 0 }),
+    [liveCoin],
   );
 
   const value: StoreValue = {
     coins: COINS,
-    coin,
+    coin: liveCoin,
     coinId,
     setCoinId,
     stress,

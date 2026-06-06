@@ -1,0 +1,54 @@
+{
+  "source": "OFAC SDN List — Crypto addresses",
+  "updatedAt": "2026-06-01",
+  "addresses": [
+    {
+      "address": "0x7F367cC41522cE07553e823bf3be79A889DEBE1B",
+      "entity": "Lazarus Group (DPRK)",
+      "program": "CYBER2",
+      "listedAt": "2020-03-02"
+    },
+    {
+      "address": "0xd882cFC20F52f2599D84b8e8D58C7FB62CFe344b",
+      "entity": "Lazarus Group (DPRK)",
+      "program": "CYBER2",
+      "listedAt": "2020-03-02"
+    },
+    {
+      "address": "0x901bb9583b24D97e995513C6778dc6888AB6870e",
+      "entity": "Lazarus Group (DPRK) — Ronin Bridge Hack",
+      "program": "CYBER2",
+      "listedAt": "2022-04-14"
+    },
+    {
+      "address": "0x098B716B8Aaf21512996dC57EB0615e2383E2f96",
+      "entity": "Lazarus Group — Ronin Bridge",
+      "program": "CYBER2",
+      "listedAt": "2022-04-14"
+    },
+    {
+      "address": "0xa0e1c89Ef1a489c9C7dE96311eD5Ce5D32c20E4b",
+      "entity": "Tornado Cash (OFAC Aug 2022)",
+      "program": "CYBER2",
+      "listedAt": "2022-08-08"
+    },
+    {
+      "address": "0x8589427373D6D84E98730D7795D8f6f8731FDA16",
+      "entity": "Tornado Cash — Proxy",
+      "program": "CYBER2",
+      "listedAt": "2022-08-08"
+    },
+    {
+      "address": "0x722122dF12D4e14e13Ac3b6895a86e84145b6967",
+      "entity": "Tornado Cash — Router",
+      "program": "CYBER2",
+      "listedAt": "2022-08-08"
+    },
+    {
+      "address": "0xD691F27f38B395864Ea86CfC7253d0f32d571C44",
+      "entity": "Suex OTC (Russia sanctions)",
+      "program": "EO13694",
+      "listedAt": "2021-09-21"
+    }
+  ]
+}
