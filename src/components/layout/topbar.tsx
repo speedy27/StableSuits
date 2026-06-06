@@ -32,7 +32,7 @@ export function Topbar() {
         >
           <span className={cn("h-1.5 w-1.5 rounded-full", m.dot)} />
           <span className={m.text}>{verdict.status}</span>
-          <span className="font-mono text-[10px] text-muted-foreground">
+          <span className="font-mono text-[10px] text-muted-foreground" suppressHydrationWarning>
             {verdict.hash}
           </span>
         </div>

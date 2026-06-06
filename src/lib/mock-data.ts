@@ -1,6 +1,7 @@
 import type { Coin, ReserveSlice, SeriesPoint } from "./types";
+import usdcHistory from "@/data/usdc-history-48.json";
+import usdcAttestation from "@/data/usdc-attestation.json";
 
-// Deterministic PRNG so server & client render identical series (no hydration drift)
 function mulberry32(seed: number) {
   return function () {
     seed |= 0;
@@ -67,7 +68,44 @@ function comp(slices: [string, number, boolean][]): ReserveSlice[] {
   }));
 }
 
+const USDC_HISTORY: SeriesPoint[] = usdcHistory.points as SeriesPoint[];
+
+const USDC_RESERVE_COMP: ReserveSlice[] = usdcAttestation.composition.map(
+  (s, i) => ({
+    label: s.label,
+    value: s.pct,
+    hqla: s.hqla,
+    color: s.hqla
+      ? ["var(--color-pass)", "var(--color-chart-2)", "var(--color-chart-3)"][i % 3]
+      : "var(--color-warn)",
+  }),
+);
+
 export const COINS: Coin[] = [
+  {
+    id: "usdc",
+    symbol: "USDC",
+    name: "USD Coin",
+    issuer: "Circle Internet Financial",
+    peg: "US Dollar",
+    pegSymbol: "US$",
+    chain: "Ethereum",
+    contract: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    supply: usdcAttestation.supplyUsd,
+    reserves: usdcAttestation.reserveUsd,
+    price: USDC_HISTORY[USDC_HISTORY.length - 1].price,
+    redemptionP95h: 0.25,
+    amlFlags: 0,
+    amlScreened: 12_480_000,
+    attestedAt: usdcAttestation.attestedAt,
+    attestationAgeSeconds: 0,
+    paidUpCapitalHkd: 0,
+    liquidCapitalHkd: 0,
+    opexBufferMonths: 36,
+    accent: "var(--color-chart-2)",
+    reserveComposition: USDC_RESERVE_COMP,
+    history: USDC_HISTORY,
+  },
   {
     id: "anchor-hkd",
     symbol: "aHKD",

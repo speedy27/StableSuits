@@ -1,0 +1,20 @@
+{
+  "issuer": "Circle Internet Financial, LLC",
+  "coin": "USDC",
+  "attestedAt": "2026-05-20T16:00:00Z",
+  "attester": "Deloitte & Touche LLP",
+  "reportUrl": "https://www.circle.com/transparency",
+  "reportLabel": "May 2026 Monthly Attestation",
+  "reserveUsd": 52100000000,
+  "supplyUsd":  51690000000,
+  "ratio": 1.0079,
+  "composition": [
+    { "label": "Cash & bank deposits", "pct": 11, "hqla": true },
+    { "label": "US Treasury Bills ≤3M", "pct": 73, "hqla": true },
+    { "label": "US Treasury Notes ≤1Y", "pct": 16, "hqla": true }
+  ],
+  "custodians": ["BlackRock", "BNY Mellon", "US Bancorp"],
+  "jurisdiction": "United States",
+  "redemptionPolicy": "1:1 at par, T+0 for institutional, T+1 retail",
+  "yieldToHolders": false
+}
