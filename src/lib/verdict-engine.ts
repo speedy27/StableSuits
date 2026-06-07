@@ -2,6 +2,7 @@ import type {
   Coin,
   Rating,
   RuleResult,
+  ScorePenalty,
   StressInputs,
   Verdict,
   VerdictStatus,
@@ -14,13 +15,50 @@ export const DEFAULT_STRESS: StressInputs = {
   fxShockBps: 0,
 };
 
-/** Predictive solvency under a redemption run + fire-sale haircut.
- *  projected = (R(1-h) - ρS) / (S(1-ρ)) with an fx adjustment for non-USD pegs. */
-export function projectedRatio(coin: Coin, s: StressInputs): number {
-  const R = coin.reserves;
-  const S = coin.supply;
+/** Per-tranche fire-sale haircut (Basel-style HQLA buckets) inferred from the
+ *  reserve-slice label. Cash is money-good; the further from cash, the deeper
+ *  the stressed discount. */
+export function trancheHaircut(label: string): number {
+  const l = label.toLowerCase();
+  if (l.includes("cash") || l.includes("deposit")) return 0.0;
+  if (l.includes("t-bill") || l.includes("treasury") || l.includes("bill")) return 0.05;
+  if (l.includes("repo") || l.includes("reverse")) return 0.07;
+  if (l.includes("mmf") || l.includes("money market")) return 0.05;
+  if (l.includes("commercial paper") || l.includes("cp")) return 0.12;
+  if (l.includes("corporate") || l.includes("bond")) return 0.15;
+  return 0.15; // unknown / "other" → conservative.
+}
+
+/** Supply-weighted average fire-sale haircut across the reserve tranches.
+ *  This is the marginal discount the book takes when assets must be liquidated. */
+export function weightedTrancheHaircut(coin: Coin): number {
+  const comp = coin.reserveComposition;
+  const total = comp.reduce((a, b) => a + b.value, 0);
+  if (total <= 0) return 0;
+  return comp.reduce((a, b) => a + (b.value / total) * trancheHaircut(b.label), 0);
+}
+
+/** Stressed reserve value. The per-tranche haircut only bites in proportion to
+ *  how much of the book must be liquidated (the run ρ): at rest nothing is sold,
+ *  so the book holds par. The manual fire-sale slider, operational-risk discount
+ *  and fx shock stack on top. */
+export function stressedReserves(coin: Coin, s: StressInputs): number {
+  const op = 1 - (s.opRisk ?? 0);
   const fx = 1 - s.fxShockBps / 10_000;
-  const num = R * (1 - s.haircut) * fx - s.run * S;
+
+  // Tranche drag scales with the liquidation pressure (the run).
+  const trancheDrag = weightedTrancheHaircut(coin) * s.run;
+  const effectiveHaircut = Math.min(1, s.haircut + trancheDrag);
+
+  return coin.reserves * (1 - effectiveHaircut) * op * fx;
+}
+
+/** Predictive solvency under a redemption run + fire-sale haircut (the LSR).
+ *  LSR = ( R·(1 − h − h̄·ρ)·(1-op)·fx − ρS ) / ( S(1-ρ) ), where h̄ is the
+ *  supply-weighted tranche haircut. At zero stress this equals the live ratio. */
+export function projectedRatio(coin: Coin, s: StressInputs): number {
+  const S = coin.supply;
+  const num = stressedReserves(coin, s) - s.run * S;
   const den = S * (1 - s.run);
   if (den <= 0) return 0;
   return num / den;
@@ -174,17 +212,63 @@ export function evaluateRules(coin: Coin, s: StressInputs): RuleResult[] {
   return results;
 }
 
-export function computeRating(rules: RuleResult[], proj: number): Rating {
-  const fails = rules.filter((r) => r.status === "FAIL").length;
-  const warns = rules.filter((r) => r.status === "WARN").length;
-  if (fails >= 2 || proj < 0.95) return "D";
-  if (fails === 1) return "CCC";
-  if (warns >= 3) return "BB";
-  if (warns === 2) return "BBB";
-  if (warns === 1) return proj >= 1.0 ? "A" : "BBB";
-  if (proj >= 1.06) return "AAA";
-  if (proj >= 1.02) return "AA";
-  return "A";
+/** Inputs the score model needs that aren't on the rule list. */
+export interface ScoreContext {
+  reserveRatio: number;
+  projectedRatio: number;
+  depegBps: number;
+  redemptionP95h: number;
+  amlFlags: number;
+  attestationHours: number;
+}
+
+export interface RatingScore {
+  score: number;
+  rating: Rating;
+  penalties: ScorePenalty[];
+}
+
+function ratingFromScore(score: number, hardFail: boolean): Rating {
+  if (hardFail) return "D";
+  if (score >= 90) return "AAA";
+  if (score >= 80) return "AA";
+  if (score >= 70) return "A";
+  if (score >= 60) return "BBB";
+  if (score >= 50) return "BB";
+  if (score >= 40) return "B";
+  return "CCC";
+}
+
+/** Base-100 creditworthiness model.
+ *  Hard rules force a D (default). Otherwise points are deducted across
+ *  liquidity, market, operational and data dimensions. */
+export function scoreRating(ctx: ScoreContext): RatingScore {
+  const penalties: ScorePenalty[] = [];
+
+  // Hard rules → immediate D.
+  const hardFail =
+    ctx.reserveRatio < 1.0 || ctx.amlFlags > 0 || ctx.redemptionP95h > 48;
+
+  // Liquidity — stress-projected solvency (LSR).
+  if (ctx.projectedRatio < 1.0) penalties.push({ label: "LSR below 100% under stress", points: 20 });
+  else if (ctx.projectedRatio < 1.05) penalties.push({ label: "LSR below 105% buffer under stress", points: 10 });
+
+  // Market — peg deviation, 1pt per 5bps of |depeg|, capped.
+  const depPts = Math.min(20, Math.floor(Math.abs(ctx.depegBps) / 5));
+  if (depPts > 0) penalties.push({ label: `Peg deviation ${Math.abs(ctx.depegBps)}bps`, points: depPts });
+
+  // Operational — redemption latency.
+  if (ctx.redemptionP95h > 24) penalties.push({ label: "Redemption p95 over 24h", points: 15 });
+  else if (ctx.redemptionP95h > 12) penalties.push({ label: "Redemption p95 over 12h", points: 5 });
+
+  // Data confidence — attestation freshness.
+  if (ctx.attestationHours > 24) penalties.push({ label: "Attestation older than 24h", points: 15 });
+  else if (ctx.attestationHours > 6) penalties.push({ label: "Attestation older than 6h", points: 10 });
+
+  const deducted = penalties.reduce((a, p) => a + p.points, 0);
+  const score = Math.max(0, Math.min(100, 100 - deducted));
+
+  return { score, rating: ratingFromScore(score, hardFail), penalties };
 }
 
 function hashVerdict(coin: Coin, status: VerdictStatus, rr: number): string {
@@ -214,9 +298,18 @@ export function computeVerdict(coin: Coin, s: StressInputs): Verdict {
 
   const attestationHours = coin.attestationAgeSeconds / 3600;
   const confidence = Math.max(
-    0.4,
-    Math.min(1, 1 - attestationHours / 72 - Math.abs(dep) / 4000),
+    0,
+    Math.min(1, 1 - attestationHours / 72 - Math.abs(dep) / 200),
   );
+
+  const { score, rating, penalties } = scoreRating({
+    reserveRatio: rr,
+    projectedRatio: proj,
+    depegBps: dep,
+    redemptionP95h: coin.redemptionP95h,
+    amlFlags: coin.amlFlags,
+    attestationHours,
+  });
 
   return {
     coinId: coin.id,
@@ -229,7 +322,9 @@ export function computeVerdict(coin: Coin, s: StressInputs): Verdict {
     amlFlags: coin.amlFlags,
     redemptionP95h: coin.redemptionP95h,
     confidence,
-    rating: computeRating(rules, proj),
+    rating,
+    score,
+    penalties,
     rules,
     hash: hashVerdict(coin, status, rr),
     timestamp: new Date().toISOString(),

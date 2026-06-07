@@ -5,8 +5,9 @@ import { useStore } from "@/components/app/store";
 import { Panel } from "./panel";
 import { statusMeta } from "@/components/app/status";
 import { cn, shortAddress } from "@/lib/utils";
+import { exportHkmaReport } from "@/lib/hkma-report";
 import { AnimatePresence, motion } from "motion/react";
-import { Boxes, Cpu, ShieldCheck, FileCheck2, Radio, Hash } from "lucide-react";
+import { Boxes, Cpu, ShieldCheck, FileCheck2, Radio, Hash, FileDown } from "lucide-react";
 
 interface FeedEvent {
   id: number;
@@ -63,10 +64,19 @@ export function OracleFeed() {
       description="The verdict humans read and machines enforce"
       icon={Boxes}
       action={
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary/40 px-2.5 py-1 font-mono text-[10px] text-muted-foreground">
-          <Hash className="h-3 w-3" />
-          {verdict.hash}
-        </span>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => exportHkmaReport(coin, verdict)}
+            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary/40 px-2.5 py-1 text-[10px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <FileDown className="h-3 w-3" />
+            HKMA report (PDF)
+          </button>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary/40 px-2.5 py-1 font-mono text-[10px] text-muted-foreground">
+            <Hash className="h-3 w-3" />
+            {verdict.hash}
+          </span>
+        </div>
       }
     >
       <div className="grid gap-4 lg:grid-cols-2">

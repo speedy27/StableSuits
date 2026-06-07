@@ -42,7 +42,7 @@ export function VerdictSummary() {
           <div className="mt-5 flex flex-wrap items-center gap-2">
             <DualBadge ok={verdict.clean} icon={ShieldCheck} label="Clean" sub={`${verdict.amlFlags} AML flags`} />
             <DualBadge ok={verdict.solvent} icon={Droplets} label="Solvent" sub={`${(verdict.projectedRatio * 100).toFixed(1)}% stressed`} />
-            <RatingBadge rating={verdict.rating} />
+            <RatingBadge rating={verdict.rating} score={verdict.score} />
           </div>
 
           <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-muted-foreground">

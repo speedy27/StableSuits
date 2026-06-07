@@ -86,6 +86,7 @@ export function AddIssuerDialog({
       rulePack,
       supply: Number(supply),
       reserves: Number(reserves),
+      price: 1,
     };
     const coin = buildCustomCoin(input);
     addCoin(coin);

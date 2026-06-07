@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useStore } from "@/components/app/store";
 import { computeVerdict } from "@/lib/verdict-engine";
+import { exportHkmaReport } from "@/lib/hkma-report";
 import { HKMA_CLAUSES } from "@/lib/hkma-rules";
 import { compactNumber } from "@/lib/utils";
 import {
@@ -41,7 +42,7 @@ const PAGES: { href: string; label: string; icon: LucideIcon }[] = [
 
 export function CommandPalette() {
   const router = useRouter();
-  const { coins, setCoinId, resetStress } = useStore();
+  const { coins, coin, verdict, setCoinId, resetStress } = useStore();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -116,7 +117,8 @@ export function CommandPalette() {
           <CommandGroup heading="Actions">
             <CommandItem
               onSelect={() => {
-                toast.success("HKMA report queued");
+                exportHkmaReport(coin, verdict);
+                toast.success("HKMA report generated");
                 setOpen(false);
               }}
             >

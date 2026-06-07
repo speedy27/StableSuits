@@ -14,10 +14,12 @@ const TONE: Record<Rating, string> = {
 
 export function RatingBadge({
   rating,
+  score,
   label = "Rating",
   className,
 }: {
   rating: Rating;
+  score?: number;
   label?: string;
   className?: string;
 }) {
@@ -34,6 +36,9 @@ export function RatingBadge({
       <span className={cn("text-lg font-semibold tabular tracking-tight", TONE[rating])}>
         {rating}
       </span>
+      {typeof score === "number" && (
+        <span className="font-mono text-[11px] tabular text-muted-foreground">{score}/100</span>
+      )}
     </div>
   );
 }

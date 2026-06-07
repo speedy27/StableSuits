@@ -52,6 +52,13 @@ export interface StressInputs {
   run: number;
   haircut: number;
   fxShockBps: number;
+  /** Operational-risk multiplier from security-audit posture (Dowsers). 0 = clean. */
+  opRisk?: number;
+}
+
+export interface ScorePenalty {
+  label: string;
+  points: number;
 }
 
 export interface Coin {
@@ -151,6 +158,10 @@ export interface Verdict {
   redemptionP95h: number;
   confidence: number;
   rating: Rating;
+  /** 0-100 creditworthiness score that maps to the rating. */
+  score: number;
+  /** Itemised deductions applied to the base-100 score. */
+  penalties: ScorePenalty[];
   rules: RuleResult[];
   hash: string;
   timestamp: string;

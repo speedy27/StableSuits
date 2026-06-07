@@ -3,6 +3,7 @@
 import { PageHeader } from "@/components/dashboard/page-header";
 import { StressLab } from "@/components/dashboard/stress-lab";
 import { ReserveChart } from "@/components/dashboard/reserve-chart";
+import { PegTracker } from "@/components/dashboard/peg-tracker";
 import { Reveal } from "@/components/motion/primitives";
 
 export default function StressPage() {
@@ -20,6 +21,9 @@ export default function StressPage() {
           <ReserveChart />
         </Reveal>
       </div>
+      <Reveal delay={0.1}>
+        <PegTracker />
+      </Reveal>
     </div>
   );
 }

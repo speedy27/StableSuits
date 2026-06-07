@@ -8,11 +8,11 @@ import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import { FlaskConical, RotateCcw } from "lucide-react";
 
-const SCENARIOS: { name: string; run: number; haircut: number; fx: number }[] = [
-  { name: "Calm", run: 0.05, haircut: 0.01, fx: 0 },
-  { name: "SVB-style", run: 0.2, haircut: 0.05, fx: 0 },
-  { name: "Bank run", run: 0.45, haircut: 0.1, fx: 25 },
-  { name: "Black swan", run: 0.7, haircut: 0.18, fx: 80 },
+const SCENARIOS: { name: string; run: number; haircut: number; fx: number; opRisk: number }[] = [
+  { name: "Calm", run: 0.05, haircut: 0.01, fx: 0, opRisk: 0 },
+  { name: "SVB-style", run: 0.2, haircut: 0.05, fx: 0, opRisk: 0.02 },
+  { name: "Bank run", run: 0.45, haircut: 0.1, fx: 25, opRisk: 0.05 },
+  { name: "Black swan", run: 0.7, haircut: 0.18, fx: 80, opRisk: 0.12 },
 ];
 
 export function StressLab() {
@@ -97,6 +97,7 @@ export function StressLab() {
         <StressSlider label="Redemption run" hint="ρ" value={stress.run} min={0} max={0.8} step={0.01} format={(v) => `${Math.round(v * 100)}%`} onChange={(run) => setStress({ run })} />
         <StressSlider label="Fire-sale haircut" hint="h" value={stress.haircut} min={0} max={0.25} step={0.005} format={(v) => `${(v * 100).toFixed(1)}%`} onChange={(haircut) => setStress({ haircut })} />
         <StressSlider label="FX / peg shock" hint="bps" value={stress.fxShockBps} min={0} max={150} step={5} format={(v) => `${v} bps`} onChange={(fxShockBps) => setStress({ fxShockBps })} />
+        <StressSlider label="Operational risk" hint="audit" value={stress.opRisk ?? 0} min={0} max={0.3} step={0.01} format={(v) => `${Math.round(v * 100)}%`} onChange={(opRisk) => setStress({ opRisk })} />
       </div>
 
       <div className="mt-5">
@@ -107,7 +108,7 @@ export function StressLab() {
             return (
               <button
                 key={s.name}
-                onClick={() => setStress({ run: s.run, haircut: s.haircut, fxShockBps: s.fx })}
+                onClick={() => setStress({ run: s.run, haircut: s.haircut, fxShockBps: s.fx, opRisk: s.opRisk })}
                 className={cn(
                   "flex items-center justify-between rounded-lg border px-3 py-2 text-xs transition-colors",
                   active
@@ -124,7 +125,7 @@ export function StressLab() {
       </div>
 
       <p className="mt-4 rounded-lg border border-border bg-secondary/20 px-3 py-2 text-center font-mono text-[10px] text-muted-foreground">
-        proj = ( R·(1−h)·fx − ρ·S ) / ( S·(1−ρ) )
+        LSR = ( R·(1−h−h̄ρ)·(1−op)·fx − ρ·S ) / ( S·(1−ρ) )
       </p>
     </Panel>
   );

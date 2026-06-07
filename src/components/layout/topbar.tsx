@@ -6,6 +6,7 @@ import { Logo } from "@/components/brand/logo";
 import { useStore } from "@/components/app/store";
 import { statusMeta } from "@/components/app/status";
 import { Button } from "@/components/ui/button";
+import { exportHkmaReport } from "@/lib/hkma-report";
 import { cn } from "@/lib/utils";
 import { Search, FileText, Command } from "lucide-react";
 import { toast } from "sonner";
@@ -56,11 +57,12 @@ export function Topbar() {
           <Button
             variant="secondary"
             size="sm"
-            onClick={() =>
+            onClick={() => {
+              exportHkmaReport(coin, verdict);
               toast.success("HKMA report generated", {
                 description: `${coin.symbol} · reserves-vs-supply · signed ${verdict.hash}`,
-              })
-            }
+              });
+            }}
             className="hidden gap-2 sm:inline-flex"
           >
             <FileText className="h-4 w-4" strokeWidth={1.75} />
