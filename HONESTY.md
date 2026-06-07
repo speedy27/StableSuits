@@ -17,9 +17,9 @@ Judges compare this against `git shortlog -sn`, so keep it honest.
 
 | Member | GitHub handle | Main contributions |
 |---|---|---|
-| Mark-Killian | *[Insert Handle]* | Built the Quant compliance/verdict engine, live Liquidity Stress Ratio, and pricing logic. |
-| Adrien | *[Insert Handle]* | Dashboard UI, full-stack integration, API routing, and system security architecture. |
-| Armand | *[Insert Handle]* | On-chain USDC ingestion, smart contract logic preparation, and formal verification modeling. |
+| Mark-Killian | *Quant analysis* | Built the Quant compliance/verdict engine, live Liquidity Stress Ratio, and pricing logic. |
+| Adrien | *CEO & Senior SWE* | Dashboard UI, full-stack integration, API routing, and system security architecture. |
+| Armand | *Fintech secuity* | On-chain USDC ingestion, smart contract logic preparation, and formal verification modeling. |
 
 ---
 
