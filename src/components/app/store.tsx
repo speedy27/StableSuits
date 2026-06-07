@@ -8,7 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { COINS, DEFAULT_COIN_ID, getCoin } from "@/lib/mock-data";
+import { COINS, DEFAULT_COIN_ID } from "@/lib/mock-data";
 import { computeVerdict, DEFAULT_STRESS } from "@/lib/verdict-engine";
 import type { Coin, StressInputs, Verdict } from "@/lib/types";
 
@@ -17,6 +17,8 @@ interface StoreValue {
   coin: Coin;
   coinId: string;
   setCoinId: (id: string) => void;
+  addCoin: (coin: Coin) => void;
+  removeCoin: (id: string) => void;
   stress: StressInputs;
   setStress: (s: Partial<StressInputs>) => void;
   resetStress: () => void;
@@ -25,6 +27,8 @@ interface StoreValue {
 }
 
 const Ctx = createContext<StoreValue | null>(null);
+
+const STORAGE_KEY = "stablesuite.customCoins";
 
 function withLiveAttestationAge(coin: Coin, now: number): Coin {
   if (!coin.attestedAt || now === 0) return coin;
@@ -39,15 +43,53 @@ function withLiveAttestationAge(coin: Coin, now: number): Coin {
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [coinId, setCoinId] = useState(DEFAULT_COIN_ID);
   const [stress, setStressState] = useState<StressInputs>(DEFAULT_STRESS);
+  const [customCoins, setCustomCoins] = useState<Coin[]>([]);
   const [now, setNow] = useState(0);
 
   useEffect(() => {
     setNow(Date.now());
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) setCustomCoins(JSON.parse(raw) as Coin[]);
+    } catch {
+      /* ignore corrupted storage */
+    }
     const id = setInterval(() => setNow(Date.now()), 60_000);
     return () => clearInterval(id);
   }, []);
 
-  const coin = useMemo(() => getCoin(coinId), [coinId]);
+  const coins = useMemo(() => [...COINS, ...customCoins], [customCoins]);
+
+  function persist(next: Coin[]) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    } catch {
+      /* ignore quota / privacy mode */
+    }
+  }
+
+  function addCoin(c: Coin) {
+    setCustomCoins((prev) => {
+      const next = [...prev.filter((x) => x.id !== c.id), c];
+      persist(next);
+      return next;
+    });
+    setCoinId(c.id);
+  }
+
+  function removeCoin(id: string) {
+    setCustomCoins((prev) => {
+      const next = prev.filter((x) => x.id !== id);
+      persist(next);
+      return next;
+    });
+    setCoinId((cur) => (cur === id ? DEFAULT_COIN_ID : cur));
+  }
+
+  const coin = useMemo(
+    () => coins.find((c) => c.id === coinId) ?? coins[0],
+    [coins, coinId],
+  );
   const liveCoin = useMemo(() => withLiveAttestationAge(coin, now), [coin, now]);
 
   const verdict = useMemo(() => computeVerdict(liveCoin, stress), [liveCoin, stress]);
@@ -57,10 +99,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   );
 
   const value: StoreValue = {
-    coins: COINS,
+    coins,
     coin: liveCoin,
     coinId,
     setCoinId,
+    addCoin,
+    removeCoin,
     stress,
     setStress: (s) => setStressState((prev) => ({ ...prev, ...s })),
     resetStress: () => setStressState(DEFAULT_STRESS),

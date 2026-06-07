@@ -255,3 +255,79 @@ export const DEFAULT_COIN_ID = COINS[0].id;
 export function getCoin(id: string): Coin {
   return COINS.find((c) => c.id === id) ?? COINS[0];
 }
+
+// ============================================================
+// Issuer onboarding — build a monitorable Coin from form input.
+// A contract address seeds a deterministic history so the chart
+// is stable across reloads.
+// ============================================================
+
+export interface CoinOnboardInput {
+  symbol: string;
+  name: string;
+  issuer: string;
+  peg: string;
+  pegSymbol: string;
+  chain: string;
+  contract: string;
+  reserveSource?: string;
+  rulePack?: string;
+  supply: number;
+  reserves: number;
+  price: number;
+}
+
+function seedFromString(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (Math.imul(h, 31) + s.charCodeAt(i)) | 0;
+  return (Math.abs(h) % 90000) + 1000;
+}
+
+export function buildCustomCoin(input: CoinOnboardInput): Coin {
+  const ratio = input.supply > 0 ? input.reserves / input.supply : 1;
+  const accent =
+    ratio >= 1.0
+      ? "var(--color-pass)"
+      : ratio >= 0.97
+        ? "var(--color-warn)"
+        : "var(--color-fail)";
+  const id = `custom-${input.contract.slice(2, 10).toLowerCase()}-${Date.now().toString(36)}`;
+
+  return {
+    id,
+    symbol: input.symbol,
+    name: input.name,
+    issuer: input.issuer,
+    peg: input.peg,
+    pegSymbol: input.pegSymbol,
+    chain: input.chain,
+    contract: input.contract,
+    supply: input.supply,
+    reserves: input.reserves,
+    price: input.price,
+    redemptionP95h: 8,
+    amlFlags: 0,
+    amlScreened: Math.max(10_000, Math.round(input.supply / 9000)),
+    attestationAgeSeconds: 1_800,
+    paidUpCapitalHkd: 300_000_000,
+    liquidCapitalHkd: 40_000_000,
+    opexBufferMonths: 18,
+    accent,
+    reserveSource: input.reserveSource,
+    rulePack: input.rulePack ?? "hkma",
+    custom: true,
+    reserveComposition: comp([
+      ["Cash @ AIs", 42, true],
+      ["≤3M T-bills", 36, true],
+      ["≤3M deposits", 22, true],
+    ]),
+    history: buildSeries({
+      seed: seedFromString(input.contract),
+      baseRatio: Math.max(0.97, ratio),
+      ratioDrift: 0.0015,
+      basePrice: input.price,
+      priceWobble: 0.0008,
+      redemptionBase: Math.max(200, Math.round(input.supply / 1_500_000)),
+    }),
+  };
+}

@@ -77,6 +77,12 @@ export interface Coin {
   reserveComposition: ReserveSlice[];
   history: SeriesPoint[];
   accent: string;
+  /** Reserve attestation endpoint (custodian read-only API or Chainlink PoR feed) */
+  reserveSource?: string;
+  /** Target regulatory rule pack id (e.g. "hkma") */
+  rulePack?: string;
+  /** True for issuer-onboarded coins (removable from the dashboard) */
+  custom?: boolean;
 }
 
 export interface MintBurnEvent {
