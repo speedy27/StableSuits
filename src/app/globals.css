@@ -57,59 +57,64 @@
 }
 
 /* ============ SOBER MONOCHROME — black / grey / white ============ */
+/* :root = LIGHT theme (next-themes adds .dark for the dark palette) */
 :root {
-  --background: oklch(0.155 0.003 264);
-  --foreground: oklch(0.97 0.002 264);
+  color-scheme: light;
 
-  --card: oklch(0.188 0.003 264);
-  --card-foreground: oklch(0.97 0.002 264);
-  --popover: oklch(0.2 0.003 264);
-  --popover-foreground: oklch(0.97 0.002 264);
+  --background: oklch(0.985 0.001 264);
+  --foreground: oklch(0.21 0.004 264);
 
-  --primary: oklch(0.97 0.002 264);
-  --primary-foreground: oklch(0.19 0.003 264);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.21 0.004 264);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.21 0.004 264);
 
-  --secondary: oklch(0.245 0.003 264);
-  --secondary-foreground: oklch(0.97 0.002 264);
+  --primary: oklch(0.24 0.004 264);
+  --primary-foreground: oklch(0.98 0.002 264);
 
-  --muted: oklch(0.235 0.003 264);
-  --muted-foreground: oklch(0.64 0.004 264);
+  --secondary: oklch(0.96 0.003 264);
+  --secondary-foreground: oklch(0.24 0.004 264);
 
-  --accent: oklch(0.255 0.003 264);
-  --accent-foreground: oklch(0.97 0.002 264);
+  --muted: oklch(0.965 0.003 264);
+  --muted-foreground: oklch(0.49 0.005 264);
 
-  --destructive: oklch(0.62 0.2 22);
+  --accent: oklch(0.95 0.003 264);
+  --accent-foreground: oklch(0.24 0.004 264);
 
-  --border: oklch(1 0 0 / 8%);
-  --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.7 0.01 264);
+  --destructive: oklch(0.58 0.21 25);
 
-  /* status — desaturated, readable on dark */
-  --pass: oklch(0.74 0.13 158);
-  --warn: oklch(0.8 0.12 82);
-  --fail: oklch(0.68 0.17 23);
-  --info: oklch(0.7 0.09 248);
+  --border: oklch(0.21 0.004 264 / 12%);
+  --input: oklch(0.21 0.004 264 / 16%);
+  --ring: oklch(0.45 0.01 264);
 
-  /* charts — monochrome ramp */
-  --chart-1: oklch(0.92 0 0);
-  --chart-2: oklch(0.66 0 0);
-  --chart-3: oklch(0.5 0 0);
-  --chart-4: oklch(0.38 0 0);
-  --chart-5: oklch(0.8 0.1 158);
+  /* status — desaturated, readable on light */
+  --pass: oklch(0.55 0.14 158);
+  --warn: oklch(0.62 0.13 72);
+  --fail: oklch(0.56 0.2 25);
+  --info: oklch(0.55 0.11 248);
+
+  /* charts — monochrome ramp (dark on light) */
+  --chart-1: oklch(0.28 0 0);
+  --chart-2: oklch(0.46 0 0);
+  --chart-3: oklch(0.6 0 0);
+  --chart-4: oklch(0.72 0 0);
+  --chart-5: oklch(0.55 0.12 158);
 
   --radius: 0.625rem;
 
-  --sidebar: oklch(0.17 0.003 264);
-  --sidebar-foreground: oklch(0.88 0.003 264);
-  --sidebar-primary: oklch(0.97 0.002 264);
-  --sidebar-primary-foreground: oklch(0.19 0.003 264);
-  --sidebar-accent: oklch(0.245 0.003 264);
-  --sidebar-accent-foreground: oklch(0.97 0.002 264);
-  --sidebar-border: oklch(1 0 0 / 7%);
-  --sidebar-ring: oklch(0.7 0.01 264);
+  --sidebar: oklch(0.99 0.001 264);
+  --sidebar-foreground: oklch(0.3 0.004 264);
+  --sidebar-primary: oklch(0.24 0.004 264);
+  --sidebar-primary-foreground: oklch(0.98 0.002 264);
+  --sidebar-accent: oklch(0.95 0.003 264);
+  --sidebar-accent-foreground: oklch(0.24 0.004 264);
+  --sidebar-border: oklch(0.21 0.004 264 / 9%);
+  --sidebar-ring: oklch(0.45 0.01 264);
 }
 
 .dark {
+  color-scheme: dark;
+
   --background: oklch(0.155 0.003 264);
   --foreground: oklch(0.97 0.002 264);
   --card: oklch(0.188 0.003 264);
@@ -153,7 +158,6 @@
   }
   html {
     @apply font-sans;
-    color-scheme: dark;
   }
   body {
     @apply bg-background text-foreground antialiased;

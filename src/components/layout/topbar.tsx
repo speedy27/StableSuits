@@ -2,6 +2,7 @@
 
 import { CoinSwitcher } from "./coin-switcher";
 import { LiveClock } from "./live-clock";
+import { ThemeToggle } from "./theme-toggle";
 import { Logo } from "@/components/brand/logo";
 import { useStore } from "@/components/app/store";
 import { statusMeta } from "@/components/app/status";
@@ -53,6 +54,8 @@ export function Topbar() {
           <span className="hidden md:block">
             <LiveClock />
           </span>
+
+          <ThemeToggle />
 
           <Button
             variant="secondary"
